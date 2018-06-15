@@ -1,0 +1,3 @@
+FuselageArea = 0.0
+WettedArea = 0.0
+LoD = 0.0

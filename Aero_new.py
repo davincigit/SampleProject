@@ -1,65 +1,65 @@
 import os
-from enum import Enum
 
-'''
-Supply the input.txt and get the result.txt file
-'''
-
-class Aero(enum):
-   FuselageArea = 1
-   WettedArea = 2
-   LoD = 3
-    
-class UserInputs:
+class InputFileReading:
     def __init__(self, filepath):
         self.__filepath = filepath
         if not os.path.exists(filepath):
-            raise Exception(filepath + " file is not found")
-
+            raise Exception(filepath + "File is not found")
+        
         self.__lines = open(filepath, "r").readlines()
-        self.aero = Aero.FuselageArea
-        self.FuselageDiameter = 0.0
+        self.WingArea = 0.0
+        self.WingSpan = 0.0
         self.FuselageLength = 0.0
+        self.FuselageDiameter = 0.0
 
-    def get_data(self):
+    def get_value(self):
         values = {"h":"j"}
         for x in self.__lines:
-           if not x.strip().startswith("#"):
-               splitedValues = x.strip().split("=")
+            splitedValues = x.strip().split("=")
 
-               if len(splitedValues) == 2:
-                   values[splitedValues[0].upper()] = splitedValues[1]
+            if len(splitedValues) == 2:
+                values[splitedValues[0].upper()] = splitedValues[1]
 
-                   if len(values) > 0:
-                       value = values["AERO"]
+        if len(values) > 0:
+            value = values["WINGAREA"]
+            self.WingArea = float(value)
 
-                       if value == "FuselageArea":
-                           self.aero = Aero.FuselageArea
+            value = values["WINGSPAN"]
+            self.WingSpan = float(value)
 
-                           value = values["FuselageDiameter"]
-                           self.FuselageDiameter = float(value)
+            value = values["FUSELAGELENGTH"]
+            self.FuselageLength = float(value)
 
-                           value = values["FuselageLength"]
-                           self.FuselageLength = float(value)
+            value = values["FUSELAGEDIAMETER"]
+            self.FuselageDiameter = float(value)
 
-                        if aero == Aero.FuselageArea:
-                           self.aero = (π * FuselageDiameter * 0.6*FuselageLength) + π*(FuselageDiameter /2)^2 * 0.4*FuselageLength) / 3 +  π*(FuselageDiameter/2)^2
+class Calculate:
+    def __init__(self, WingArea, WingSpan, FuselageLength, FuselageDiameter):
+        self.AspectRatio = 0.0
+        self.FuselageArea = 0.0
+        self.WettedArea = 0.0
+        self.LoD = 0.0
 
-                          
-    def main():
+        self.AspectRatio = WingSpan ** 2 / WingArea
+
+        self.FuselageArea = (3.14159 * (FuselageDiameter * 0.6 * FuselageLength) + 3.14159 * ((FuselageDiameter / 2) ** 2) * 0.4 * FuselageLength) / 3 + 3.14159 * ((FuselageDiameter / 2) ** 2)
+        self.WettedArea = self.FuselageArea + 2 * WingArea - 2 * FuselageDiameter *(WingArea/WingSpan) + 4 * (1.25 * FuselageDiameter) * (0.125 * FuselageLength) + 2 * (1.5 * FuselageDiameter) * (0.15 * FuselageDiameter)
+        self.LoD = 10.0 + 4 * ( self.AspectRatio / (self.WettedArea/WingArea) - 1.0)
+
+def main():
     cd = os.getcwd()
     try:
-        input = UserInputs(cd + "\\input.txt")
-        input.get_data()
-        pro = results(input.WingArea, input.WingSpan, input.FuselageLength, input.FuselageDiameter)
+        input = InputFileReading(cd + "\\input.txt")
+        input.get_value()
+
+        cal = Calculate(input.WingArea, input.WingSpan, input.FuselageLength, input.FuselageDiameter)
 
         f = open(cd + "\\result.txt", "w+")
-        f.write("Surface Area of the fuselage : " + str(pro.FuselageArea))
-        f.write("\nWettedArea of the aircraft : " + str(pro.WettedArea))
-        f.write("\nLift or Drag of the aircraft : "+ str(pro.LoD))
-        f.close()
+        f.write("FUSELAGEAREA :"+str(cal.FuselageArea))
+        f.write("\nWETTEDAREA :"+str(cal.WettedArea))
+        f.write("\nLoD :"+ str(cal.LoD))
     except Exception as e:
-        print("Application error. " + str(e))
+        print("Application Error."+str(e))
 
 if __name__ == "__main__":
     main()
